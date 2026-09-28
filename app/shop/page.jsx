@@ -1,25 +1,41 @@
 import { db } from "@/db";
-import { products, categories } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { products } from "@/db/schema";
+import { eq, asc, desc } from "drizzle-orm";
 import Link from "next/link";
-// import CheckoutButton from "../components/CheckoutButton";
+import SortDropdown from "../components/SortDropdown";
+import CheckoutButton from "../components/CheckoutButton";
 
-export const revalidate = 1000; // Cache this page for 1 hour for fast loading
+export default async function ShopPage({ searchParams }) {
+  // 1. AWAIT the searchParams promise (Next.js 15 requirement)
+  const resolvedParams = await searchParams;
+  // 1. Read the sort parameter from the URL
+  const sort = resolvedParams.sort || "featured";
 
-export default async function ShopPage() {
-  // Fetch only active products
-  // const result = await db.execute(`
-  //   SELECT current_database(), current_schema();
-  // `);
-
-  //   console.log("result", result);
-  //   const activeProducts = await db.select().from(products);
+  // 2. Determine the Drizzle sorting logic based on the parameter
+  let orderByClause;
+  switch (sort) {
+    case "price_asc":
+      orderByClause = asc(products.price);
+      break;
+    case "price_desc":
+      orderByClause = desc(products.price);
+      break;
+    case "newest":
+      orderByClause = desc(products.createdAt);
+      break;
+    case "featured":
+    default:
+      orderByClause = desc(products.isFeatured);
+      break;
+  }
+  // console.log("SORT PARAMETER:", sort);
   const activeProducts = await db
     .select()
     .from(products)
-    .where(eq(products.isActive, true));
+    .where(eq(products.isActive, true))
+    .orderBy(orderByClause);
 
-  console.log("ACTIVE PRODUCTS:", activeProducts);
+  //console.log("ACTIVE PRODUCTS:", activeProducts);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -30,12 +46,7 @@ export default async function ShopPage() {
 
         {/* Simple mock filter dropdown */}
         <div className="mt-4 md:mt-0">
-          <select className="border-gray-300 rounded-md text-gray-700 text-sm focus:ring-blue-500 focus:border-blue-500 py-2 pl-3 pr-10 shadow-sm cursor-pointer bg-white">
-            <option>Sort by: Featured</option>
-            <option>Price: Low to High</option>
-            <option>Price: High to Low</option>
-            <option>Newest Arrivals</option>
-          </select>
+          <SortDropdown />
         </div>
       </div>
 
@@ -87,7 +98,7 @@ export default async function ShopPage() {
                 </div>
 
                 {/* Reusing your existing Checkout Button */}
-                {/* <CheckoutButton product={product} /> */}
+                <CheckoutButton product={product} />
               </div>
             </div>
           </div>
