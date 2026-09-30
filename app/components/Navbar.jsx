@@ -2,13 +2,14 @@
 import Link from "next/link";
 import { useCartStore } from "@/app/shop/cartStore";
 import { useIsClient } from "../hooks/useIsClient";
+import MiniCart from "./MiniCart";
 
 export default function Navbar() {
   // Only re-renders when the number changes
-  const totalItems = useCartStore((state) => state.totalItems());
+  // const totalItems = useCartStore((state) => state.totalItems());
 
   // Prevent hydration errors by waiting for the component to mount on the client
-  const isMounted = useIsClient();
+  //const isMounted = useIsClient();
 
   return (
     <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
@@ -47,7 +48,7 @@ export default function Navbar() {
           </div>
 
           {/* Cart Icon Placeholder */}
-          <div className="flex items-center">
+          {/* <div className="flex items-center">
             <Link
               href="/checkout"
               className="text-gray-500 hover:text-gray-900 p-2 relative"
@@ -72,7 +73,8 @@ export default function Navbar() {
                 </span>
               )}
             </Link>
-          </div>
+          </div> */}
+          <MiniCart />
         </div>
       </div>
     </nav>

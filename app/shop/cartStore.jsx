@@ -6,8 +6,9 @@ export const useCartStore = create(
     // FIX #1: the order is (set, get) - NOT (get, set)!
     (set, get) => ({
       cart: [],
-      // Add item or increase quantity if it already exists
-      addToCart: (product) => {
+
+      // Add a product (default 1), or increase its quantity if already in the cart
+      addToCart: (product, quantity = 1) => {
         set((state) => {
           const existing = state.cart.find((item) => item.id === product.id);
 
@@ -15,11 +16,12 @@ export const useCartStore = create(
             return {
               cart: state.cart.map((item) =>
                 item.id === product.id
-                  ? { ...item, quantity: item.quantity + 1 }
+                  ? { ...item, quantity: item.quantity + quantity }
                   : item,
               ),
             };
           }
+
           // Only keep what the cart needs (small + safe to save in localStorage)
           const slimProduct = {
             id: product.id,
@@ -27,7 +29,7 @@ export const useCartStore = create(
             slug: product.slug,
             price: product.price,
             imageUrl: product.imageUrl,
-            quantity: 1,
+            quantity,
           };
           return { cart: [...state.cart, slimProduct] };
         });
@@ -46,31 +48,24 @@ export const useCartStore = create(
         }));
       },
 
-      // Remove item entirely
       removeFromCart: (productId) => {
         set({ cart: get().cart.filter((item) => item.id !== productId) });
       },
-      // Calculate total price
-      cartTotal: () => {
-        return get().cart.reduce((total, item) => {
-          return total + parseFloat(item.price) * item.quantity;
-        }, 0);
-      },
-      // Clear cart after successful checkout
+
       clearCart: () => set({ cart: [] }),
 
       // Helpers - call them like: useCartStore((s) => s.totalItems())
       totalItems: () =>
         get().cart.reduce((sum, item) => sum + item.quantity, 0),
+
       cartTotal: () =>
         get().cart.reduce(
           (sum, item) => sum + parseFloat(item.price) * item.quantity,
           0,
         ),
     }),
-
     {
-      name: "sayan-cart", // The key used in localStorage
+      name: "sayan-cart", // key in localStorage
     },
   ),
 );
