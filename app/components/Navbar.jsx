@@ -1,6 +1,15 @@
+"use client";
 import Link from "next/link";
+import { useCartStore } from "@/app/shop/cartStore";
+import { useIsClient } from "../hooks/useIsClient";
 
 export default function Navbar() {
+  // Only re-renders when the number changes
+  const totalItems = useCartStore((state) => state.totalItems());
+
+  // Prevent hydration errors by waiting for the component to mount on the client
+  const isMounted = useIsClient();
+
   return (
     <nav className="bg-white shadow-sm border-b sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -39,7 +48,10 @@ export default function Navbar() {
 
           {/* Cart Icon Placeholder */}
           <div className="flex items-center">
-            <button className="text-gray-500 hover:text-gray-900 p-2 relative">
+            <Link
+              href="/checkout"
+              className="text-gray-500 hover:text-gray-900 p-2 relative"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6"
@@ -54,10 +66,12 @@ export default function Navbar() {
                   d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
                 />
               </svg>
-              <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-blue-600 rounded-full">
-                0
-              </span>
-            </button>
+              {isMounted && totalItems > 0 && (
+                <span className="absolute top-0 right-0 min-w-5 h-5 px-1 flex items-center justify-center text-xs font-bold text-white bg-blue-600 rounded-full translate-x-1/4 -translate-y-1/4">
+                  {totalItems}
+                </span>
+              )}
+            </Link>
           </div>
         </div>
       </div>

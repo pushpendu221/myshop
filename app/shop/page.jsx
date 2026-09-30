@@ -3,15 +3,12 @@ import { products } from "@/db/schema";
 import { eq, asc, desc } from "drizzle-orm";
 import Link from "next/link";
 import SortDropdown from "../components/SortDropdown";
-import CheckoutButton from "../components/CheckoutButton";
+import AddToCartButton from "../components/AddToCartButton";
 
 export default async function ShopPage({ searchParams }) {
-  // 1. AWAIT the searchParams promise (Next.js 15 requirement)
-  const resolvedParams = await searchParams;
-  // 1. Read the sort parameter from the URL
+  const resolvedParams = await searchParams; // Next.js 15: searchParams is a promise
   const sort = resolvedParams.sort || "featured";
 
-  // 2. Determine the Drizzle sorting logic based on the parameter
   let orderByClause;
   switch (sort) {
     case "price_asc":
@@ -28,14 +25,12 @@ export default async function ShopPage({ searchParams }) {
       orderByClause = desc(products.isFeatured);
       break;
   }
-  // console.log("SORT PARAMETER:", sort);
+
   const activeProducts = await db
     .select()
     .from(products)
     .where(eq(products.isActive, true))
     .orderBy(orderByClause);
-
-  //console.log("ACTIVE PRODUCTS:", activeProducts);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -43,26 +38,23 @@ export default async function ShopPage({ searchParams }) {
         <h1 className="text-3xl font-bold text-gray-700 tracking-tight">
           All Products
         </h1>
-
-        {/* Simple mock filter dropdown */}
         <div className="mt-4 md:mt-0">
           <SortDropdown />
         </div>
       </div>
 
-      {/* Product Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
         {activeProducts.map((product) => (
           <div
             key={product.id}
-            className="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl transition-shadow duration-300 overflow-hidden flex flex-col"
+            className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-shadow duration-300 overflow-hidden flex flex-col"
           >
-            {/* Image Container */}
-            <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden bg-gray-200 lg:aspect-none group-hover:opacity-90 transition-opacity h-64">
+            {/* FIX: "relative" lives here so the Sale badge sticks to the image */}
+            <div className="relative h-64 w-full overflow-hidden bg-gray-200">
               <img
                 src={product.imageUrl}
                 alt={product.name}
-                className="h-full w-full object-cover object-center"
+                className="h-full w-full object-cover object-center group-hover:opacity-90 transition-opacity"
               />
               {product.compareAtPrice && (
                 <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
@@ -71,7 +63,6 @@ export default async function ShopPage({ searchParams }) {
               )}
             </div>
 
-            {/* Product Details */}
             <div className="p-5 flex flex-col flex-grow">
               <Link
                 href={`/shop/${product.slug}`}
@@ -96,16 +87,13 @@ export default async function ShopPage({ searchParams }) {
                     </span>
                   )}
                 </div>
-
-                {/* Reusing your existing Checkout Button */}
-                <CheckoutButton product={product} />
+                <AddToCartButton product={product} />
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Empty State Fallback */}
       {activeProducts.length === 0 && (
         <div className="text-center py-20">
           <h3 className="mt-2 text-sm font-semibold text-gray-900">
