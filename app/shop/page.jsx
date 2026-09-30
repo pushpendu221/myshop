@@ -5,6 +5,7 @@ import { eq, asc, desc } from "drizzle-orm";
 import Link from "next/link";
 import SortDropdown from "../components/SortDropdown";
 import AddToCartButton from "../components/AddToCartButton";
+import Image from "next/image";
 
 export const metadata = { title: "Shop | My E-Commerce" };
 
@@ -79,11 +80,13 @@ export default async function ShopPage({ searchParams }) {
                   aria-hidden="true"
                 >
                   {product.imageUrl ? (
-                    <img
+                    <Image
                       src={product.imageUrl}
-                      alt=""
+                      alt={product.name}
                       loading="lazy"
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      width={120}
+                      height={120}
                     />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center text-sm text-gray-400">
